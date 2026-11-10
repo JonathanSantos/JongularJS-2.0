@@ -11,7 +11,7 @@ Este repositório guarda duas coisas lado a lado:
 - **a versão 2.0**, de 2026, em [`src/`](src/): a mesma API e os mesmos atributos, com o motor refeito para os navegadores de hoje.
 
 > [!NOTE]
-> O projeto nasceu no meu perfil antigo do GitHub, [**@JonathanSantos-zz**](https://github.com/JonathanSantos-zz), em [JonathanSantos-zz/JongularJS](https://github.com/JonathanSantos-zz/JongularJS). Este repositório é a continuação dele no meu perfil atual, [@JonathanSantos](https://github.com/JonathanSantos). O histórico de commits de 2015 foi preservado: os primeiros commits daqui são os de lá.
+> O projeto nasceu no meu perfil antigo do GitHub, [**@JonathanSantos-zz**](https://github.com/JonathanSantos-zz), em [JonathanSantos-zz/JongularJS](https://github.com/JonathanSantos-zz/JongularJS). Este repositório, [JonathanSantos/JongularJS-2.0](https://github.com/JonathanSantos/JongularJS-2.0), é a continuação dele no meu perfil atual, [@JonathanSantos](https://github.com/JonathanSantos). O histórico de commits de 2015 foi preservado: os primeiros commits daqui são os de lá.
 
 O relatório completo, com o código de 2015 rodando ao vivo sobre o motor novo, está em [`index.html`](index.html). Abra o arquivo direto no navegador (não precisa de servidor). Uma versão em texto dele fecha este README.
 
