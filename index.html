@@ -1,29 +1,948 @@
-<!DOCTYPE html>
-<html jo-app="myApp">
+<!doctype html>
+<html lang="pt-BR">
 <head>
-	<title>Test Jongular</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JongularJS · 2015 → 2026</title>
+<meta name="description" content="Retrospectiva do JongularJS: um AngularJS de bolso escrito em agosto de 2015, lido com calma onze anos depois e refeito sem perder a essência.">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fbfbfa;
+    --surface: #f1f1ef;
+    --fg: #1d1f23;
+    --muted: #666b74;
+    --line: #dcdcd8;
+    --accent: #c3002f;
+    --ok: #1a7f4b;
+    --mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --measure: 44rem;
+    --wide: 76rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1b1d22;
+      --surface: #23262d;
+      --fg: #d7dae0;
+      --muted: #8b919c;
+      --line: #33373f;
+      --accent: #ff6b81;
+      --ok: #7fca9b;
+    }
+  }
+  * { box-sizing: border-box }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100% }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 17px/1.65 var(--sans) }
+  main, header.top, footer { width: min(100% - 2rem, var(--wide)); margin-inline: auto }
+  main > section > :where(h2, h3, p, ul, ol, table, .timeline, dl) { max-width: var(--measure) }
+
+  a { color: inherit; text-decoration-color: var(--accent); text-underline-offset: .2em }
+  a:hover { color: var(--accent) }
+  code, kbd { font: .86em var(--mono) }
+  :not(pre) > code { background: var(--surface); padding: .1em .35em; border-radius: 4px }
+  strong { font-weight: 650 }
+
+  header.top { padding: 4.5rem 0 2.5rem }
+  h1 { font-size: clamp(2.6rem, 8vw, 5rem); line-height: 1; letter-spacing: -.03em; margin: 0 0 1.5rem; font-weight: 750 }
+  h1 span { color: var(--accent) }
+  .lede { font-size: 1.3rem; line-height: 1.5; max-width: 38rem; margin: 0 0 1.5rem }
+  .facts { font: .86rem/1.9 var(--mono); color: var(--muted); max-width: var(--measure); margin: 0 }
+  .facts b { color: var(--fg); font-weight: 600 }
+
+  nav { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 92%, transparent); border-block: 1px solid var(--line) }
+  nav ul { width: min(100% - 2rem, var(--wide)); margin: 0 auto; padding: .6rem 0; list-style: none; display: flex; gap: 1.4rem; overflow-x: auto; font-size: .9rem; white-space: nowrap }
+  nav a { text-decoration: none; color: var(--muted) }
+  nav a:hover { color: var(--fg) }
+
+  section { padding: 3.5rem 0 1rem; scroll-margin-top: 3rem }
+  h2 { font-size: 1.9rem; line-height: 1.15; letter-spacing: -.02em; margin: 0 0 1rem }
+  h3 { font-size: 1.2rem; margin: 2.8rem 0 .5rem }
+  h3 small { font: .8rem var(--mono); color: var(--muted); font-weight: 400; margin-left: .5rem }
+  p { margin: 0 0 1.1rem }
+  .note { color: var(--muted); font-size: .93rem }
+
+  /* Blocos de código (Jonacode) */
+  figure.code { margin: 1.2rem 0 1.6rem; max-width: var(--measure); border: 1px solid var(--line); border-radius: 8px; overflow: hidden }
+  figure.code figcaption { display: flex; justify-content: space-between; gap: 1rem; padding: .45rem .8rem; font: .78rem var(--mono); color: var(--muted); background: var(--surface); border-bottom: 1px solid var(--line) }
+  figure.code figcaption b { color: var(--fg); font-weight: 600 }
+  figure.code pre { margin: 0; --jc-font-size: 13.5px }
+  figure.code pre:not(.jc-static) { padding: 8px 12px; font: 13.5px/1.6 var(--mono); overflow: auto }
+  .pair { display: grid; gap: 0 1.2rem; grid-template-columns: minmax(0, 1fr); align-items: start }
+  .pair figure.code { max-width: none }
+  @media (min-width: 62rem) { .pair { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) } }
+  .y2015 figcaption b::before { content: '2015 · '; color: var(--muted); font-weight: 400 }
+  .y2026 figcaption b::before { content: '2.0 · '; color: var(--accent); font-weight: 400 }
+
+  /* Linha do tempo */
+  .timeline { list-style: none; margin: 1.5rem 0; padding: 0; border-left: 2px solid var(--line) }
+  .timeline li { position: relative; padding: 0 0 1.1rem 1.4rem }
+  .timeline li::before { content: ''; position: absolute; left: -6px; top: .55em; width: 10px; height: 10px; border-radius: 50%; background: var(--bg); border: 2px solid var(--muted) }
+  .timeline li.mark::before { border-color: var(--accent); background: var(--accent) }
+  .timeline time { display: block; font: .8rem var(--mono); color: var(--muted) }
+  .timeline .gap { color: var(--muted); font-size: .9rem; padding-bottom: 1.6rem }
+  .timeline .gap::before { display: none }
+
+  table { border-collapse: collapse; width: 100%; font-size: .93rem; margin: 1.2rem 0 1.6rem }
+  table.full { max-width: none }
+  th, td { text-align: left; vertical-align: top; padding: .6rem .9rem .6rem 0; border-bottom: 1px solid var(--line) }
+  th { font: 600 .78rem var(--mono); color: var(--muted) }
+  td:first-child { white-space: nowrap; font-weight: 600 }
+  td .ln { font: .8rem var(--mono); color: var(--muted); white-space: nowrap }
+  .scroll { overflow-x: auto }
+
+  /* Bancada ao vivo */
+  .bench { display: grid; gap: 1rem; grid-template-columns: minmax(0, 1fr); margin: 1.5rem 0 }
+  @media (min-width: 62rem) { .bench { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) } }
+  .bench .editors { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; min-width: 0 }
+  .tabs { display: flex; align-items: center; gap: .2rem; padding: .35rem .5rem; background: var(--surface); border-bottom: 1px solid var(--line) }
+  .tabs button { font: .8rem var(--mono); color: var(--muted); background: none; border: 0; border-radius: 5px; padding: .3rem .6rem; cursor: pointer }
+  .tabs button[aria-selected='true'] { color: var(--fg); background: var(--bg) }
+  .tabs .run { margin-left: auto; color: var(--bg); background: var(--accent); font-weight: 600; padding: .3rem .9rem }
+  .tabs .reset { color: var(--muted) }
+  .editor { height: 26rem }
+  .editor[hidden] { display: none }
+  .stage { border: 1px solid var(--line); border-radius: 8px; display: flex; flex-direction: column; min-width: 0 }
+  .stage > header { font: .78rem var(--mono); color: var(--muted); padding: .55rem .8rem; background: var(--surface); border-bottom: 1px solid var(--line); border-radius: 8px 8px 0 0 }
+  #stage-output { padding: 1rem; flex: 1; font-size: .95rem; overflow: auto }
+  #stage-output input { font: inherit; padding: .2rem .4rem }
+  #stage-output [jo-click] { cursor: pointer; text-decoration: underline dotted }
+  #stage-output h1 { font-size: 1.15rem; margin: .5rem 0; letter-spacing: 0 }
+  #stage-output [jo-controller] { padding: .6rem 0; border-bottom: 1px dashed var(--line) }
+  #stage-log { margin: 0; padding: .6rem .8rem; border-top: 1px solid var(--line); font: .78rem/1.5 var(--mono); color: var(--muted); white-space: pre-wrap; max-height: 8rem; overflow: auto }
+  #stage-log.failed { color: var(--accent) }
+
+  .verdict { display: grid; gap: 1.2rem; grid-template-columns: minmax(0, 1fr); margin: 1.5rem 0 }
+  @media (min-width: 48rem) { .verdict { grid-template-columns: 1fr 1fr } }
+  .verdict > div { border-top: 2px solid var(--line); padding-top: .8rem }
+  .verdict > div.now { border-color: var(--accent) }
+  .verdict h4 { margin: 0 0 .4rem; font: 600 .8rem var(--mono); color: var(--muted) }
+  .verdict pre { margin: 0; font: .82rem/1.55 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere }
+
+  footer { padding: 3rem 0 4rem; margin-top: 3rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .9rem }
+  footer p { max-width: var(--measure) }
+</style>
 </head>
 <body>
-	<div jo-controller="testController">
-		Usuario: <span jo-model="user"></span><br />
-		Senha: <span jo-model="senha"></span>
-	</div>
-	<script type="text/javascript" src="jongularJS.js"></script>
-	<script type="text/javascript">
 
-		var app = jongular.module('myApp');
-		var test;
+<header class="top" jo-app="report" jo-controller="ageController">
+  <h1>Jongular<span>JS</span></h1>
+  <p class="lede">Um AngularJS de bolso, escrito por Jonathan numa sexta-feira à tarde de agosto de 2015. Este relatório lê aquele código com calma, onze anos depois, e apresenta a versão 2.0 que ele já pedia.</p>
+  <p class="facts">
+    primeiro commit <b>07/08/2015 16:05</b> · idade hoje <b jo-model="age">11 anos, 3 meses e 3 dias</b> (<b jo-model="days">4.113</b> dias)<br>
+    <b>6 commits</b> em 4 dias (4 no master, 2 num branch) · <b>293 linhas</b> num arquivo só · licença GPL-2.0<br>
+    perfil de origem <a href="https://github.com/JonathanSantos-zz/JongularJS">JonathanSantos-zz/JongularJS</a> · hoje em <a href="https://github.com/JonathanSantos">github.com/JonathanSantos</a>
+  </p>
+</header>
 
-		app.controller('testController', function($scope){
-			test = $scope;
-			$scope.user = 'Jonathan';
-			$scope.senha = 'teste';
+<nav aria-label="Seções">
+  <ul>
+    <li><a href="#ao-vivo">Ao vivo</a></li>
+    <li><a href="#linha-do-tempo">Linha do tempo</a></li>
+    <li><a href="#achados">O que tem de bom</a></li>
+    <li><a href="#tempo">O que o tempo cobrou</a></li>
+    <li><a href="#dois-ponto-zero">A versão 2.0</a></li>
+    <li><a href="#padroes">Design patterns</a></li>
+    <li><a href="#evidencias">Evidências</a></li>
+  </ul>
+</nav>
 
-			setTimeout(function(){$scope.user = 'Rafael';}, 3000);
-			setTimeout(function(){$scope.user = 'Marcão';}, 6000);
+<main>
 
-		});
+<section id="ao-vivo">
+  <h2>O código de 2015, rodando agora</h2>
+  <p>No branch <code>JongularJS.js</code> do repositório antigo existe uma página de demonstração que carrega um arquivo chamado <code>jongularJS.2.0.js</code>. Esse arquivo nunca foi commitado. A reescrita deste repositório foi feita para ser ele: o HTML e o JavaScript abaixo são os daquela demo, sem nenhuma alteração, executando sobre o motor novo.</p>
+  <p class="note">Os dois editores são o <a href="https://github.com/JonathanSantos/jonacode">Jonacode</a>, o editor de código que o mesmo autor escreveu em 2026. Edite à vontade e rode de novo. Os dois <code>setTimeout</code> trocam o usuário para “Rafael” aos 3 s e “Marcão” aos 6 s.</p>
 
-	</script>
+  <div class="bench">
+    <div class="editors">
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="true" data-tab="js">controllers.js</button>
+        <button role="tab" aria-selected="false" data-tab="html">index.html</button>
+        <button class="reset" id="reset" type="button">restaurar 2015</button>
+        <button class="run" id="run" type="button">Rodar</button>
+      </div>
+      <div class="editor" id="editor-js"></div>
+      <div class="editor" id="editor-html" hidden></div>
+    </div>
+    <div class="stage">
+      <header>resultado · JongularJS <span id="engine-version"></span></header>
+      <div id="stage-output"></div>
+      <pre id="stage-log"></pre>
+    </div>
+  </div>
+
+  <div class="verdict">
+    <div>
+      <h4>original/JongularJS.js no Chrome 152 (medido em 10/11/2026)</h4>
+      <pre>Uncaught TypeError: Object.observe is not a function
+    at Jongular.controller (jongularJS.js:248:11)</pre>
+      <p class="note">A tela chega a mostrar “Jonathan”, porque o primeiro desenho não depende do observador. Depois disso nada mais se atualiza.</p>
+    </div>
+    <div class="now">
+      <h4>as mesmas duas páginas sobre dist/jongularJS.2.0.js</h4>
+      <pre>ok  demo do master roda como em 2015
+ok  demo do branch recebe o jongularJS.2.0.js que pedia</pre>
+      <p class="note">São testes automatizados: os HTMLs de <code>original/</code> são carregados byte a byte e só a resposta do <code>&lt;script src&gt;</code> é trocada.</p>
+    </div>
+  </div>
+</section>
+
+<section id="linha-do-tempo">
+  <h2>Quatro dias de agosto</h2>
+  <p>O histórico do git é curto e conta uma história inteira: uma tarde para provar a ideia, um fim de semana de intervalo e uma manhã de terça para transformar a prova num pequeno framework.</p>
+
+  <ol class="timeline">
+    <li class="mark"><time>sex 07/08/2015 16:05 · 50ba2d0</time>Initial commit. README de uma linha: “Minha criação baseado o conceito do angular”.</li>
+    <li><time>sex 07/08/2015 17:08 · 4758d64</time>A página de teste, com <code>jo-app</code>, <code>jo-controller</code> e dois <code>jo-model</code>.</li>
+    <li><time>sex 07/08/2015 17:09 · d91f516</time>Primeira versão da biblioteca: <b>109 linhas</b>. Já tem módulo, controller, leitura do nome <code>$scope</code> e a tela reagindo a <code>Object.observe</code>. Pouco mais de uma hora depois do commit inicial.</li>
+    <li class="gap">fim de semana</li>
+    <li><time>ter 11/08/2015 09:10 · 1ebae96 (branch JongularJS.js)</time>A biblioteca cresce para <b>293 linhas</b>: registro de diretivas, <code>jo-click</code>, <code>jo-init</code>, input de mão dupla, serviços, <code>$rootScope</code> e <code>$http</code>.</li>
+    <li><time>ter 11/08/2015 09:16 · 574f4c4 (branch JongularJS.js)</time>Uma demo maior, com três controllers, que aponta para <code>jongularJS.2.0.js</code>. O nome da próxima versão já estava escolhido.</li>
+    <li class="mark"><time>ter 11/08/2015 10:29 · d003baf</time>O mesmo código entra no master (+209 −25). É o último commit.</li>
+    <li class="gap">onze anos</li>
+    <li class="mark"><time>10/11/2026</time>JongularJS 2.0: este repositório.</li>
+  </ol>
+
+  <h3>O que estava acontecendo em volta</h3>
+  <p>Agosto de 2015 foi um ponto de virada, e o código carrega marcas dos dois lados dela.</p>
+  <ul>
+    <li><strong>AngularJS 1.4</strong> tinha saído em maio e era o padrão de mercado. A atualização de tela dele dependia do ciclo de <em>digest</em> (dirty checking): mudar o <code>$scope</code> dentro de um <code>setTimeout</code> não atualizava nada sem <code>$apply</code> ou <code>$timeout</code>.</li>
+    <li><strong>ES2015</strong> tinha sido aprovado em junho, dois meses antes. <code>let</code>, arrow functions, classes, módulos e <code>Proxy</code> existiam na especificação e quase em nenhum navegador. O arquivo é ES5 puro: <code>var</code>, IIFE e <code>prototype</code>.</li>
+    <li><strong><code>Object.observe</code></strong> estava no Chrome desde a versão 36 (2014) e era a aposta da época para data binding sem dirty checking. A proposta foi retirada em novembro de 2015, três meses depois deste código, e a API saiu do Chrome 50 em 2016.</li>
+    <li><strong><code>Proxy</code></strong>, o substituto natural, chegou ao Chrome 49 em março de 2016. O Vue adotou a ideia no Vue 3, em 2020.</li>
+    <li><strong><code>fetch</code></strong> já existia no Chrome 42 (abril de 2015), mas quase ninguém confiava nele ainda. O <code>$http</code> daqui usa <code>XMLHttpRequest</code>, como todo mundo.</li>
+  </ul>
+</section>
+
+<section id="achados">
+  <h2>O que tem de bom neste código</h2>
+  <p>Lido hoje, o arquivo impressiona menos pelo tamanho e mais pelas escolhas. Em 293 linhas ele reproduz as quatro ideias centrais do AngularJS (módulo, controller com escopo, diretivas em atributos e injeção de dependências) e, em uma delas, vai além do original.</p>
+
+  <h3>1. Reatividade sem digest <small>linhas 248–250 e 135–151</small></h3>
+  <p>Este é o achado mais interessante. O AngularJS comparava valores antigos e novos a cada ciclo. Aqui o <code>$scope</code> é um objeto comum vigiado por <code>Object.observe</code>, e cada mudança vai direto ao elemento certo. A consequência aparece na própria demo: <code>setTimeout(function(){ $scope.user = 'Rafael' }, 3000)</code> atualiza a tela sozinho. No AngularJS de 2015 essa mesma linha não faria nada visível. A equipe do Angular planejava usar essa API no futuro; este código já usava.</p>
+  <figure class="code y2015" data-lines="248-250"><figcaption><b>original/JongularJS.js</b><span>o observador</span></figcaption></figure>
+  <figure class="code y2015" data-lines="135-151"><figcaption><b>original/JongularJS.js</b><span>da mudança ao DOM, sem passar por um ciclo</span></figcaption></figure>
+
+  <h3>2. Injeção de dependências pelo nome do parâmetro <small>linha 205</small></h3>
+  <p>Para saber que um controller quer <code>$scope</code> e <code>$http</code>, a função é convertida em texto e os nomes dos parâmetros são extraídos com uma regex. É o mesmo truque do <code>$injector.annotate</code> do AngularJS, reescrito de cabeça em uma linha. Quem chega a essa solução sozinho entendeu como o framework funciona por dentro, e não só como se usa.</p>
+  <figure class="code y2015" data-lines="205"><figcaption><b>original/JongularJS.js</b><span>fn.toString() como metadado</span></figcaption></figure>
+  <figure class="code y2015" data-lines="129-133"><figcaption><b>original/JongularJS.js</b><span>a tabela do que pode ser injetado</span></figcaption></figure>
+
+  <h3>3. Diretivas como um registro <small>linhas 14 e 161–186</small></h3>
+  <p>Na primeira versão, de sexta, o <code>jo-model</code> estava escrito direto no laço principal. Na terça ele virou uma entrada de um objeto <code>modules</code>, e o laço passou a procurar <code>'jo-' + nome</code> para cada entrada. Criar o <code>jo-click</code> e o <code>jo-init</code> depois disso foi só acrescentar funções. É o princípio aberto/fechado aplicado num refactor de fim de semana.</p>
+  <figure class="code y2015" data-lines="74-82"><figcaption><b>original/JongularJS.js</b><span>uma diretiva inteira</span></figcaption></figure>
+  <figure class="code y2015" data-lines="176-185"><figcaption><b>original/JongularJS.js</b><span>o objeto que toda diretiva recebe</span></figcaption></figure>
+
+  <h3>4. O dialeto de 2015 <small>linhas 1–11, 202 e 291</small></h3>
+  <p>O arquivo é um retrato fiel do JavaScript de antes dos módulos: IIFE recebendo o global como parâmetro, <code>'use strict'</code> no topo, um <code>_$</code> que embrulha <code>querySelectorAll</code> e o idioma <code>Jongular.fn = Jongular.prototype</code>, herdado do jQuery. Zero dependências, um <code>&lt;script&gt;</code> e pronto.</p>
+  <figure class="code y2015" data-lines="1-11"><figcaption><b>original/JongularJS.js</b><span>o padrão Module antes dos módulos</span></figcaption></figure>
+
+  <h3>5. Um <code>$http</code> que cobre do IE6 ao futuro <small>linhas 85–105</small></h3>
+  <p>O serviço HTTP traz o fallback para <code>ActiveXObject("Microsoft.XMLHTTP")</code>, a receita de AJAX que todo tutorial ensinava. Ele convive, no mesmo arquivo, com <code>Object.observe</code>, que só existia no Chrome 36 em diante. O IE6 nunca chegaria até aquela linha, mas o cuidado está lá, junto com o <code>onSucess</code> escrito com um “c” só. A versão 2.0 aceita essa grafia de propósito.</p>
+  <figure class="code y2015" data-lines="86-105"><figcaption><b>original/JongularJS.js</b><span>AJAX como se ensinava</span></figcaption></figure>
+
+  <h3>6. Pensado para brincar no console</h3>
+  <p>A demo guarda o escopo numa variável global (<code>test = $scope</code>). Com a página aberta, digitar <code>test.user = 'outro nome'</code> no console muda a tela na hora. É o tipo de detalhe que mostra o prazer de quem estava vendo a própria ideia funcionar. Esse comportamento virou um dos testes da 2.0.</p>
+</section>
+
+<section id="tempo">
+  <h2>O que o tempo cobrou</h2>
+  <p>Nada disto diminui o que foi feito em quatro dias. É a lista do que a reescrita precisava resolver, com a linha onde cada ponto aparece.</p>
+  <div class="scroll">
+  <table class="full">
+    <thead><tr><th>ponto</th><th>no original</th><th>na 2.0</th></tr></thead>
+    <tbody>
+      <tr><td>API extinta</td><td><span class="ln">L248</span> <code>Object.observe</code> foi removido dos navegadores em 2016. Hoje o arquivo lança erro no primeiro controller.</td><td><code>Proxy</code> com rastreamento de leitura (<code>src/reactivity.js</code>).</td></tr>
+      <tr><td>Só a primeira mudança</td><td><span class="ln">L249</span> O observador lê apenas <code>a[0]</code>. Duas atribuições no mesmo instante atualizam um campo só.</td><td>Escritas do mesmo tick viram uma execução com o valor final.</td></tr>
+      <tr><td>Só o primeiro nível</td><td><span class="ln">L55–62</span> <code>jo-model="user.name"</code> desenha uma vez e não acompanha mudanças.</td><td>Reatividade em profundidade, criada sob demanda.</td></tr>
+      <tr><td><code>eval</code></td><td><span class="ln">L23, L58, L80, L217, L224</span> Atributos e injeção passam por <code>eval</code>.</td><td>Interpretador de expressões próprio, sem <code>eval</code>, compatível com CSP.</td></tr>
+      <tr><td><code>jo-click="fn()"</code></td><td><span class="ln">L80</span> Com parênteses, a função roda no carregamento e o clique recebe o retorno dela.</td><td>Referência (<code>add</code>) e chamada (<code>add(10)</code>) funcionam, com <code>$event</code>.</td></tr>
+      <tr><td><code>jo-init="fn()"</code></td><td><span class="ln">L22–23</span> Os parênteses são removidos antes do <code>eval</code>, então a função é lida mas não chamada.</td><td>Atribuição, chamada ou referência: as três executam.</td></tr>
+      <tr><td>Argumentos deslocados</td><td><span class="ln">L229–242</span> O teste <code>check != 0</code> está invertido: um serviço encontrado entra seguido de um <code>undefined</code>, e um nome desconhecido não ocupa posição.</td><td>Contêiner com erro claro: <code>Dependência desconhecida: "$x", pedida por "ctrl"</code>.</td></tr>
+      <tr><td>Ordem de registro</td><td><span class="ln">L217, L245</span> O controller roda na hora do registro. Um serviço declarado depois não existe ainda.</td><td>Controllers rodam no bootstrap; serviços são criados quando pedidos.</td></tr>
+      <tr><td>Input</td><td><span class="ln">L37, L143</span> Só <code>type="text"</code> escrito por extenso, três eventos de teclado e a volta para o campo comentada.</td><td>Evento <code>input</code>, ida e volta, e checkbox, radio, number, select e textarea.</td></tr>
+      <tr><td>Controllers aninhados</td><td><span class="ln">L166</span> Um elemento dentro de dois controllers é ligado aos dois.</td><td>Pertence ao controller mais próximo.</td></tr>
+      <tr><td><code>$http</code></td><td><span class="ln">L95–100, L124–125</span> <code>onSucess</code> dispara a cada <code>readystatechange</code> e o POST não envia corpo.</td><td><code>fetch</code>, Promise, corpo em JSON e callback uma vez só.</td></tr>
+      <tr><td>Maiúsculas</td><td><span class="ln">index.html L11</span> A página pede <code>jongularJS.js</code> e o arquivo se chama <code>JongularJS.js</code>. Funciona no Windows e no macOS, dá 404 no Linux.</td><td>O HTML original foi mantido como está; os testes respondem ao nome pedido.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="dois-ponto-zero">
+  <h2>A versão 2.0</h2>
+  <p>A regra da reescrita foi uma só: <strong>quem escreveu código para o Jongular em 2015 não muda nada</strong>. O global <code>jongular</code>, <code>jongular.module()</code>, <code>app.controller()</code>, <code>app.service()</code>, os atributos <code>jo-*</code>, o <code>$scope</code> como objeto comum que se atribui e a tela acompanha, o bootstrap automático no carregamento, um escopo por nome de controller e até os campos do objeto que as diretivas recebem continuam iguais. O que mudou foi o que existe por baixo.</p>
+
+  <h3>Reatividade: de <code>Object.observe</code> para <code>Proxy</code></h3>
+  <p>O contrato é o mesmo de 2015, inclusive no ritmo: <code>Object.observe</code> entregava as mudanças em lote num microtask, e a 2.0 faz igual. A diferença é a direção. Antes, cada mudança saía procurando no documento os elementos com aquele nome. Agora cada diretiva é um <em>efeito</em> que registra o que leu, e uma escrita reagenda só quem leu aquela chave.</p>
+  <div class="pair">
+    <figure class="code y2015" data-lines="248-250"><figcaption><b>original/JongularJS.js</b><span>L248</span></figcaption></figure>
+    <figure class="code y2026"><figcaption><b>src/reactivity.js</b><span>leitura assina, escrita avisa</span></figcaption><script type="text/plain">
+const handlers = {
+  get(target, key, receiver) {
+    const value = Reflect.get(target, key, receiver)
+    if (typeof key === 'symbol') return value
+    track(target, key)
+    return reactive(value)
+  },
+  set(target, key, value, receiver) {
+    const existed = Object.hasOwn(target, key)
+    const previous = target[key]
+    const next = toRaw(value)
+    const succeeded = Reflect.set(target, key, next, receiver)
+    if (!existed) {
+      trigger(target, ITERATE)
+      // Num array, criar um índice já muda o `length` por baixo dos panos.
+      if (Array.isArray(target)) trigger(target, 'length')
+    }
+    if (!existed || !Object.is(previous, next)) trigger(target, key)
+    return succeeded
+  },
+}
+</script></figure>
+  </div>
+
+  <h3>Expressões: de <code>eval</code> para um interpretador</h3>
+  <p>Os atributos de 2015 usavam um vocabulário pequeno: nomes, caminhos com ponto, chamadas e a atribuição do <code>jo-init</code>. A 2.0 implementa exatamente esse vocabulário (mais <code>!</code>, índices e literais) com tokenizador, árvore e avaliação. Acesso a <code>constructor</code>, <code>__proto__</code> e <code>prototype</code> é recusado.</p>
+  <div class="pair">
+    <figure class="code y2015" data-lines="79-81"><figcaption><b>original/JongularJS.js</b><span>L79</span></figcaption></figure>
+    <figure class="code y2026"><figcaption><b>src/module.js</b><span>o que o jo-click e o jo-init executam</span></figcaption><script type="text/plain">
+run(locals) {
+  const result = expression.evaluate(scopes, locals)
+  // `jo-click="add"` (sem parênteses) chama a função, como em 2015.
+  const isFunctionReference = expression.isReference && typeof result === 'function'
+  return isFunctionReference ? result.call($scope, locals?.$event) : result
+},
+</script></figure>
+  </div>
+
+  <h3>Injeção: a mesma ideia, com contêiner</h3>
+  <p>Ler o nome dos parâmetros continua sendo o jeito principal, porque é a assinatura do projeto. A leitura agora entende arrow functions, <code>async</code>, valores padrão, comentários e classes. Para código minificado existe a notação em array do AngularJS e a propriedade <code>$inject</code>. Serviços passaram a ser instanciados uma vez, quando alguém pede, e podem depender uns dos outros.</p>
+  <div class="pair">
+    <figure class="code y2015" data-lines="205"><figcaption><b>original/JongularJS.js</b><span>L205</span></figcaption></figure>
+    <figure class="code y2026"><figcaption><b>src/injector.js</b><span>três formas de declarar</span></figcaption><script type="text/plain">
+export function annotate(target) {
+  if (Array.isArray(target)) {
+    const fn = target.at(-1)
+    if (typeof fn !== 'function') {
+      throw new InjectionError('Na notação em array, o último item precisa ser a função')
+    }
+    return { fn, dependencies: target.slice(0, -1) }
+  }
+  if (typeof target !== 'function') {
+    throw new InjectionError('Esperava uma função ou um array [dependências..., função]')
+  }
+  return { fn: target, dependencies: target.$inject ?? parameterNames(target) }
+}
+</script></figure>
+  </div>
+
+  <h3>Diretivas: o registro ficou público</h3>
+  <p>O objeto <code>modules</code> era privado dentro da IIFE. Agora <code>jongular.directive(nome, fn)</code> é API. A diretiva recebe os mesmos cinco campos de 2015 (<code>attribute</code>, <code>element</code>, <code>name</code>, <code>controller</code>, <code>$scope</code>) e cinco ferramentas novas. Um <code>jo-show</code> cabe em cinco linhas:</p>
+  <div class="pair">
+    <figure class="code y2015" data-lines="74-82"><figcaption><b>original/JongularJS.js</b><span>L74</span></figcaption></figure>
+    <figure class="code y2026"><figcaption><b>uma diretiva escrita por quem usa</b><span>sem tocar no núcleo</span></figcaption><script type="text/plain">
+jongular.directive('show', ({ element, evaluate, effect }) => {
+  effect(() => {
+    element.hidden = !evaluate()
+  })
+})
+
+// e o jo-click da própria biblioteca:
+function click({ listen, run }) {
+  listen('click', (event) => run({ $event: event }))
+}
+</script></figure>
+  </div>
+
+  <h3><code>$http</code>: Promise por fora, 2015 por dentro</h3>
+  <div class="pair">
+    <figure class="code y2015" data-lines="95-104"><figcaption><b>original/JongularJS.js</b><span>L95</span></figcaption></figure>
+    <figure class="code y2026"><figcaption><b>src/http.js</b><span>onSucess continua valendo</span></figcaption><script type="text/plain">
+function request(method, url, options = {}) {
+  const onSuccess = options.onSuccess ?? options.onSucess
+  const { onError } = options
+  const promise = send(method, url, options)
+  if (!onSuccess && !onError) return promise
+
+  // Estilo de 2015: quem passou callback não precisa tratar a Promise.
+  promise.then(onSuccess, onError ?? (() => {}))
+  return promise
+}
+</script></figure>
+  </div>
+
+  <h3>Como o código ficou organizado</h3>
+  <p>Um arquivo virou sete módulos ES. Quatro deles não sabem que o DOM existe e são testados sem navegador; só dois encostam em elementos.</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>arquivo</th><th>linhas</th><th>papel</th><th>DOM</th></tr></thead>
+    <tbody>
+      <tr><td><code>reactivity.js</code></td><td>168</td><td><code>reactive</code>, <code>effect</code>, fila em microtask</td><td>não</td></tr>
+      <tr><td><code>expression.js</code></td><td>237</td><td>tokenizador, parser e avaliador dos atributos</td><td>não</td></tr>
+      <tr><td><code>injector.js</code></td><td>127</td><td>leitura de parâmetros e contêiner de dependências</td><td>não</td></tr>
+      <tr><td><code>http.js</code></td><td>76</td><td><code>$http</code> sobre <code>fetch</code></td><td>não</td></tr>
+      <tr><td><code>directives.js</code></td><td>113</td><td>registro e as três diretivas de 2015</td><td>sim</td></tr>
+      <tr><td><code>module.js</code></td><td>183</td><td>controllers, serviços, bootstrap e destroy</td><td>sim</td></tr>
+      <tr><td><code>index.js</code></td><td>58</td><td>a fachada <code>jongular</code></td><td>só o evento de carregamento</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="padroes">
+  <h2>Design patterns</h2>
+  <p>Quase todos já estavam no original em forma de intuição. A 2.0 deu nome, fronteira e teste a cada um.</p>
+  <div class="scroll">
+  <table class="full">
+    <thead><tr><th>padrão</th><th>em 2015</th><th>na 2.0</th><th>o que melhorou</th></tr></thead>
+    <tbody>
+      <tr><td>Module</td><td>IIFE com <code>global</code> injetado <span class="ln">L1, L293</span></td><td>Módulos ES, mais um bundle IIFE gerado para o <code>&lt;script&gt;</code> clássico</td><td>Cada parte importável e testável sozinha; o uso antigo continua.</td></tr>
+      <tr><td>Facade</td><td>O objeto <code>jongular</code> <span class="ln">L266</span></td><td><code>src/index.js</code></td><td>Mesma superfície, agora com <code>directive</code> e <code>version</code>.</td></tr>
+      <tr><td>Factory Method</td><td><code>jongular.module(name)</code> <span class="ln">L268</span></td><td>Igual, e agenda o bootstrap do módulo criado</td><td>Funciona também quando o script carrega depois da página pronta.</td></tr>
+      <tr><td>Registry + Strategy</td><td><code>modules['click']</code> <span class="ln">L14</span></td><td><code>directive()</code> e os adaptadores de campo do <code>jo-model</code></td><td>Extensão pública; um tipo novo de input é uma entrada numa tabela.</td></tr>
+      <tr><td>Observer</td><td><code>Object.observe</code> <span class="ln">L248</span></td><td><code>reactive()</code> + <code>effect()</code></td><td>Assinatura automática por leitura, em profundidade, com lote.</td></tr>
+      <tr><td>Dependency Injection</td><td><code>fn.toString()</code> + <code>eval</code> <span class="ln">L205–246</span></td><td><code>createInjector()</code></td><td>Erros com nome, ciclo detectado, três formas de anotar.</td></tr>
+      <tr><td>Singleton preguiçoso</td><td>não havia: o serviço era a função crua <span class="ln">L235</span></td><td>Serviço instanciado no primeiro pedido</td><td>Ordem de registro deixa de importar.</td></tr>
+      <tr><td>Interpreter</td><td><code>eval('$scope.' + attr)</code></td><td><code>compile()</code> em <code>expression.js</code></td><td>Seguro, com mensagem que cita a expressão que falhou.</td></tr>
+      <tr><td>Adapter</td><td>XHR ou ActiveX atrás de <code>$http</code> <span class="ln">L89–93</span></td><td>Callbacks de 2015 sobre <code>fetch</code> e Promise</td><td>As duas gerações de API convivem.</td></tr>
+      <tr><td>Núcleo funcional, casca imperativa</td><td>tudo junto no laço <span class="ln">L153–192</span></td><td>Quatro módulos sem DOM, dois com</td><td>A lógica difícil é testada sem navegador.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>O que ficou de fora, de propósito</h3>
+  <p>Filtros, <code>jo-repeat</code>, rotas e componentes não existiam em 2015 e não foram acrescentados. A biblioteca continua sendo o que era: um jeito de ligar um objeto a um pedaço de HTML com atributos. Duas mudanças de comportamento merecem aviso. O controller agora roda quando o DOM fica pronto, e não na linha do <code>app.controller()</code>. E um serviço é instanciado antes de ser entregue, quando antes o controller recebia a função crua.</p>
+</section>
+
+<section id="evidencias">
+  <h2>Evidências</h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>medida</th><th>2015</th><th>2.0</th></tr></thead>
+    <tbody>
+      <tr><td>Código</td><td>293 linhas, 1 arquivo</td><td>962 linhas com comentários, 7 módulos</td></tr>
+      <tr><td>Tamanho entregue</td><td>6,2 kB (1,8 kB gzip), sem minificar</td><td>11,1 kB minificado (4,7 kB gzip)</td></tr>
+      <tr><td>Dependências em produção</td><td>0</td><td>0</td></tr>
+      <tr><td>Testes</td><td>a página de demo</td><td>58 automatizados, 58 passando</td></tr>
+      <tr><td>Roda no Chrome 152</td><td>não (<code>Object.observe</code>)</td><td>sim, conferido nas três páginas de exemplo</td></tr>
+      <tr><td>Usa <code>eval</code></td><td>5 pontos</td><td>nenhum</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="note">Números medidos em 10/11/2026 com Node 22 e jsdom. Os testes de DOM rodam em jsdom; no navegador real a conferência foi manual, no Chrome 152. Firefox e Safari não foram testados. Para repetir: <code>npm install</code>, <code>npm run build</code>, <code>npm test</code>.</p>
+</section>
+
+</main>
+
+<footer>
+  <p>JongularJS nasceu em <a href="https://github.com/JonathanSantos-zz/JongularJS">github.com/JonathanSantos-zz</a>, o perfil antigo do autor. Esta edição vive no perfil atual, <a href="https://github.com/JonathanSantos">github.com/JonathanSantos</a>, com o código original preservado em <code>original/</code> e o histórico de commits de 2015 intacto.</p>
+  <p>Os trechos de código desta página são destacados pelo <a href="https://github.com/JonathanSantos/jonacode">Jonacode</a>. O cabeçalho, com a idade calculada ao abrir a página, é um controller do JongularJS 2.0.</p>
+</footer>
+
+<script type="text/plain" id="source-2015">(function(global){
+	'use strict';
+
+	//manipulador de DOM
+	var _$ = function(el){
+		if(global.document){
+			return global.document.querySelectorAll(el);
+		}else{
+			throw new Error('Document não está definido!');
+		}
+	};
+
+	//Modulos do Jongular
+	var modules = {};
+
+	modules['init'] = function joInit(element){
+		var attr = element.attribute;
+		var elements = element.element;
+		var $scope = element.$scope;
+
+		try{
+			attr = attr.replace(/\(\)/g, '');
+			eval('$scope.' + attr);
+		}catch(err){
+			console.error(err.message);
+		}
+
+	};
+
+	modules['model'] = function joModel(element){
+		var attr = element.attribute;
+		var elements = element.element;
+		var $scope = element.$scope;
+
+		if(elements.nodeName === 'INPUT'){
+
+			if(elements.getAttribute('type') === 'text'){
+
+				elements.value = $scope[attr];
+
+				elements.addEventListener('keypress', function(){
+					$scope[attr] = this.value;
+				});
+
+				elements.addEventListener('keyup', function(){
+					$scope[attr] = this.value;
+				});
+
+				elements.addEventListener('keydown', function(){
+					$scope[attr] = this.value;
+				});
+			}
+
+		}else{
+			if(attr.indexOf('.') > 0){
+				try{
+					attr = attr.replace(/\(\)/g, '')
+					var t = eval('$scope.' + attr);
+					if(t != undefined){
+						elements.innerText = t;
+					}
+				}catch(err){console.error(err.message);}
+			}else{
+				if(!($scope[attr] === undefined)){
+					elements.innerText = $scope[attr];
+				}else{
+					elements.innerText = '';
+				}
+			}
+		}
+		
+	};
+
+	modules['click'] = function joClick(element){
+		var attr = element.attribute;
+		var elements = element.element;
+		var $scope = element.$scope;
+		
+		try{
+			elements.addEventListener('click', eval('$scope.' + attr));
+		}catch(err){console.error(err.message);}
+	};
+
+	//Funções implementadas no jongular
+	var $http = {
+	  get : function(url, obj){
+	    var xmlhttp;
+
+	    if (window.XMLHttpRequest){
+	      xmlhttp = new XMLHttpRequest();
+	    }else{
+	      xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+	    }
+
+	    xmlhttp.onreadystatechange = function(){
+
+	      if(obj.onSucess){
+	        obj['onSucess'](xmlhttp);
+	      }
+
+	    }
+
+	    xmlhttp.open("GET", url);
+	    xmlhttp.send();
+	  },
+
+	  post : function(url, obj){
+	  	 var xmlhttp;
+
+	    if (window.XMLHttpRequest){
+	      xmlhttp = new XMLHttpRequest();
+	    }else{
+	      xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+	    }
+
+	    xmlhttp.onreadystatechange = function(){
+
+	      if(obj.onSucess){
+	        obj['onSucess'](xmlhttp);
+	      }
+
+	    }
+
+	    xmlhttp.open("POST", url);
+	    xmlhttp.send();
+	  }
+	};
+
+	//Parametros mapeados
+	var parameters = {};
+	parameters['$scope'] = 'this.groups[name].$scope';
+	parameters['$rootScope'] = 'this.$rootScope';
+	parameters['$http'] = '$http';
+
+	var __refresh__ = function(name, nameNode, val){
+
+		var el = global.document.querySelectorAll('*[jo-controller="' + name + '"]');
+		for(var j = 0; j < el.length; j++){
+			var els = el[j].querySelectorAll('*[jo-model="' + nameNode + '"]');
+			for(var i = 0; i < els.length; i++){
+
+				if(els[i].nodeName === 'INPUT'){
+					//els[i].value = val;
+				}else{
+					els[i].innerText = val;
+				}
+				
+			}
+		}
+
+	};
+
+	var __refreshAll__ = function(el){
+
+		var app = global.document.querySelector('*[jo-app="' + el.name + '"]');
+		for(var x in el.groups){
+
+			var group = el.groups[x];
+			var controllers = app.querySelectorAll('*[jo-controller="' + group.name + '"]');
+			
+			for(var y in modules){
+				var module = {name : y, fn : modules[y]};
+
+				var temporario = [];
+				for(var i = 0; i < controllers.length; i++){
+					var elementos = controllers[i].querySelectorAll('*[jo-' + module.name + ']');
+					var nameController = controllers[i].getAttribute('jo-controller');
+					for(var j = 0; j < elementos.length; j++){
+						temporario.push({controller : nameController, el : elementos[j]});
+					}
+				}
+
+				for(var i = 0; i < temporario.length; i++){
+					var element = temporario[i].el;
+
+					var attr = element.getAttribute('jo-' + module.name);
+					var obj = {
+						attribute : attr,
+						element : element, 
+						name : module.name, 
+						controller : temporario[i].controller,
+						$scope : el.groups[temporario[i].controller].$scope
+					};
+
+					module.fn.bind(el.groups[temporario[i].controller], obj)();
+				}
+
+			}
+
+		}
+
+	};
+
+	//Definicao do Jongular começa aqui
+	var Jongular = function(name){
+		this.groups = {};
+		this.services = {};
+		this.$rootScope = {};
+		this.name = name;
+	};
+
+	Jongular.fn = Jongular.prototype = {
+
+		controller : function(name, fn){
+			var attr = fn.toString().replace(/\n/g, '').replace(/ /g,'').replace(/function.*?\((.*?)\).*/, '$1').split(',');
+
+			this.groups[name] = {
+				name : name,
+				fn : fn,
+				attr : attr,
+				$scope : {}
+			};
+
+			var temp = [];
+
+			if(attr.indexOf('$scope') == 0 && attr.length === 1){
+					this.groups[name].fn(eval(parameters['$scope']));
+			}else{
+				for(var i = 0; i < attr.length; i++){
+					var check = 0;
+
+					for(var x in parameters){
+						if(x === attr[i]){
+							temp.push(eval(parameters[x]));
+							check = 1;
+						}
+					}
+
+					if(check != 0){
+						continue;
+					}
+
+					for(var x in this.services){
+						if(attr[i] == x){
+							temp.push(this.services[x].fn);
+							check = 1;
+						}
+					}
+
+					if(check != 0){
+						temp.push(undefined);
+					}
+					
+				}
+				this.groups[name].fn.apply(this.groups[name], temp);
+			}
+
+			Object.observe(this.groups[name].$scope, function(a){
+				__refresh__(name, a[0].name, a[0].object[a[0].name]);
+			});
+
+		},
+
+		service : function(name, fn){
+			var attr = fn.toString().replace(/\n/g, '').replace(/ /g,'').replace(/function.*?\((.*?)\).*/, '$1').split(',');
+
+			this.services[name] = {
+				name : name,
+				fn : fn,
+				attr : attr
+			};
+		},
+
+	};
+
+	var jongular = {
+
+		module : function(name){
+			name = name || 'undefined';
+			var jong = new Jongular(name);
+			this.app.push(jong);
+			return jong;
+		},
+
+		app : []
+
+	};
+
+	global.document.addEventListener('DOMContentLoaded', function(e){
+
+		if(jongular.app.length > 0){
+			for(var i = 0; i < jongular.app.length; i++){
+				var el = jongular.app[i];
+				__refreshAll__(el);
+			}
+		}
+
+	});
+
+
+	global.jongular = jongular;
+
+}(this));</script>
+
+<script type="text/plain" id="demo-html">
+<div jo-controller="testController">
+	Usuario: <span jo-model="user"></span><br />
+	Senha: <span jo-model="senha"></span><br />
+	Usuario: <input type="text" jo-model="joao"/>
+	<span jo-click="mostrar">nome</span>
+</div>
+
+<div jo-controller="novoController">
+	<span jo-model="clique"></span><br />
+	<input type="button" jo-click="add" value="Adicionar" />
+	<h1 jo-init="jo = 'Jonathan Reis dos Santos'" jo-model="jo"></h1>
+</div>
+
+<div jo-controller="semController">
+	<h1 jo-init="jo = 'Jonathan Reis dos Santos'" jo-model="jo"></h1>
+	<input type="text" jo-model="jo"/>
+</div>
+</script>
+<script type="text/plain" id="demo-js">
+var app = jongular.module('myApp');
+
+app.controller('testController', function($scope, $rootScope){
+	$scope.user = 'Jonathan';
+	$scope.senha = 'teste';
+
+	$scope.mostrar = function(){
+		alert($scope.joao);
+	};
+
+	setTimeout(function(){$scope.user = 'Rafael';}, 3000);
+	setTimeout(function(){$scope.user = 'Marcão';}, 6000);
+
+});
+
+app.controller('novoController', function($scope, $rootScope){
+	
+	$scope.clique = 0;
+
+	$scope.add = function(){
+		$scope.clique++;
+	};
+
+});
+
+app.controller('semController', function($http){
+	console.log($http);
+});
+</script>
+
+<script src="vendor/jonacode/jonacode.iife.min.js"></script>
+<script src="vendor/jonacode/jonacode.languages.iife.min.js"></script>
+<script src="dist/jongularJS.2.0.min.js"></script>
+<script>
+(function () {
+  'use strict'
+
+  // --- Cabeçalho: um controller do próprio Jongular 2.0 ----------------------
+
+  var report = jongular.module('report')
+
+  report.controller('ageController', function ($scope) {
+    var born = new Date(2015, 7, 7)
+    var now = new Date()
+    var years = now.getFullYear() - born.getFullYear()
+    var months = now.getMonth() - born.getMonth()
+    var days = now.getDate() - born.getDate()
+    if (days < 0) {
+      months--
+      days += new Date(now.getFullYear(), now.getMonth(), 0).getDate()
+    }
+    if (months < 0) {
+      years--
+      months += 12
+    }
+    var plural = function (count, one, many) { return count + ' ' + (count === 1 ? one : many) }
+    $scope.age = plural(years, 'ano', 'anos') + ', ' + plural(months, 'mês', 'meses') + ' e ' + plural(days, 'dia', 'dias')
+    $scope.days = Math.round((Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - Date.UTC(2015, 7, 7)) / 864e5).toLocaleString('pt-BR')
+  })
+
+  // --- Blocos de código com o Jonacode ---------------------------------------
+
+  var darkQuery = window.matchMedia('(prefers-color-scheme: dark)')
+  var currentTheme = function () { return darkQuery.matches ? Jonacode.oneDark : Jonacode.oneLight }
+  var originalLines = document.getElementById('source-2015').textContent.split('\n')
+
+  function dedent(lines) {
+    var indents = lines.filter(function (line) { return line.trim() }).map(function (line) { return /^\t*/.exec(line)[0].length })
+    var common = Math.min.apply(null, indents)
+    return lines.map(function (line) { return line.slice(common) })
+  }
+
+  function readSnippet(figure) {
+    if (figure.dataset.lines) {
+      var range = figure.dataset.lines.split('-').map(Number)
+      var first = range[0]
+      var last = range[1] || first
+      return { code: dedent(originalLines.slice(first - 1, last)).join('\n'), firstLine: first }
+    }
+    var embedded = figure.querySelector('script[type="text/plain"]')
+    return { code: embedded.textContent.replace(/^\n|\n$/g, ''), firstLine: 0 }
+  }
+
+  var snippets = Array.prototype.map.call(document.querySelectorAll('figure.code'), function (figure) {
+    var holder = document.createElement('div')
+    figure.appendChild(holder)
+    return { holder: holder, snippet: readSnippet(figure) }
+  })
+
+  var styleElement = document.createElement('style')
+  document.head.appendChild(styleElement)
+
+  function paintSnippets() {
+    var theme = currentTheme()
+    styleElement.textContent = Jonacode.highlightStyles(theme)
+    snippets.forEach(function (entry) {
+      entry.holder.innerHTML = Jonacode.highlight(entry.snippet.code, Jonacode.javascript, {
+        theme: theme,
+        tabSize: 4,
+        lineNumbers: entry.snippet.firstLine > 0,
+        firstLine: entry.snippet.firstLine || 1,
+      })
+    })
+  }
+  paintSnippets()
+
+  // --- Bancada: a demo de 2015 sobre o motor 2.0 -----------------------------
+
+  var defaults = {
+    js: document.getElementById('demo-js').textContent.replace(/^\n|\n$/g, ''),
+    html: document.getElementById('demo-html').textContent.replace(/^\n|\n$/g, ''),
+  }
+  var output = document.getElementById('stage-output')
+  var log = document.getElementById('stage-log')
+  document.getElementById('engine-version').textContent = jongular.version
+
+  function makeEditor(id, value, language) {
+    return Jonacode.createEditor(document.getElementById(id), {
+      value: value,
+      language: language,
+      theme: currentTheme(),
+      tabSize: 4,
+      fontSize: 13,
+      extensions: Jonacode.basicSetup(),
+      ariaLabel: id,
+    })
+  }
+  var editors = {
+    js: makeEditor('editor-js', defaults.js, Jonacode.javascript),
+    html: makeEditor('editor-html', defaults.html, Jonacode.html),
+  }
+
+  darkQuery.addEventListener('change', function () {
+    paintSnippets()
+    editors.js.setOptions({ theme: currentTheme() })
+    editors.html.setOptions({ theme: currentTheme() })
+  })
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-tab]'), function (tab) {
+    tab.addEventListener('click', function () {
+      Array.prototype.forEach.call(document.querySelectorAll('[data-tab]'), function (other) {
+        var selected = other === tab
+        other.setAttribute('aria-selected', String(selected))
+        document.getElementById('editor-' + other.dataset.tab).hidden = !selected
+      })
+    })
+  })
+
+  function writeLog(message, failed) {
+    log.textContent += (log.textContent ? '\n' : '') + message
+    log.classList.toggle('failed', log.classList.contains('failed') || Boolean(failed))
+  }
+  ;['warn', 'error'].forEach(function (level) {
+    var original = console[level]
+    console[level] = function (message) {
+      if (typeof message === 'string' && message.indexOf('[jongular]') === 0) writeLog(message, true)
+      return original.apply(console, arguments)
+    }
+  })
+
+  var benchModules = []
+
+  function run() {
+    benchModules.forEach(function (module) { module.destroy() })
+    log.textContent = ''
+    log.classList.remove('failed')
+    output.innerHTML = '<div jo-app="myApp">' + editors.html.getValue() + '</div>'
+
+    var before = jongular.app.length
+    try {
+      // Mesmo contexto global de um <script> clássico, como a página de 2015.
+      new Function(editors.js.getValue())()
+    } catch (error) {
+      writeLog(error.name + ': ' + error.message, true)
+    }
+    benchModules = jongular.app.splice(before)
+    benchModules.forEach(function (module) { module.bootstrap(output.firstElementChild) })
+    if (!log.textContent) writeLog('rodando · ' + new Date().toLocaleTimeString('pt-BR'))
+  }
+
+  document.getElementById('run').addEventListener('click', run)
+  document.getElementById('reset').addEventListener('click', function () {
+    editors.js.setValue(defaults.js)
+    editors.html.setValue(defaults.html)
+    run()
+  })
+  run()
+})()
+</script>
 </body>
 </html>
