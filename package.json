@@ -1,0 +1,26 @@
+{
+  "name": "jongularjs",
+  "version": "2.0.0",
+  "description": "Um mini framework no espírito do AngularJS 1.x, escrito em 2015 e refeito em 2026: jo-app, jo-controller, jo-model, jo-click e jo-init.",
+  "license": "GPL-2.0",
+  "author": "Jonathan Reis dos Santos",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./browser": "./dist/jongularJS.2.0.js"
+  },
+  "files": [
+    "src",
+    "dist"
+  ],
+  "scripts": {
+    "build": "esbuild src/global.js --bundle --format=iife --target=es2022 --outfile=dist/jongularJS.2.0.js && esbuild src/global.js --bundle --minify --format=iife --target=es2022 --outfile=dist/jongularJS.2.0.min.js && cp dist/jongularJS.2.0.js examples/2015/jongularJS.2.0.js",
+    "test": "node --test \"test/**/*.test.js\"",
+    "serve": "python3 -m http.server 4173"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "jsdom": "^27.4.0"
+  }
+}

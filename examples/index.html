@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt-BR" jo-app="myApp">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JongularJS 2.0 · exemplo</title>
+  <style>
+    body { font: 16px/1.5 system-ui, sans-serif; max-width: 34rem; margin: 3rem auto; padding: 0 1rem }
+    section { border-top: 1px solid #8884; padding: 1rem 0 }
+    input, button, select { font: inherit; padding: .25rem .5rem }
+    code { font: .875em ui-monospace, monospace }
+  </style>
+</head>
+<body>
+  <h1 jo-model="title"></h1>
+  <p>O título acima vem do <code>$rootScope</code> e está fora de qualquer controller.</p>
+
+  <section jo-controller="profileController">
+    <label>Nome: <input jo-model="user.name"></label>
+    <label><input type="checkbox" jo-model="user.shouting"> em maiúsculas</label>
+    <p>Olá, <strong jo-model="greeting()"></strong></p>
+    <p jo-show="user.shouting">Não precisa gritar.</p>
+  </section>
+
+  <section jo-controller="counterController">
+    <button jo-click="add">+1</button>
+    <button jo-click="addMany(10)">+10</button>
+    <button jo-click="count = 0">zerar</button>
+    <span>Cliques: <strong jo-model="count"></strong></span>
+  </section>
+
+  <section jo-controller="httpController" jo-init="load()">
+    <p><code>$http.get('user.json')</code> respondeu: <strong jo-model="status"></strong></p>
+    <p>Autor: <span jo-model="author.name"></span>, desde <span jo-model="author.since"></span></p>
+  </section>
+
+  <script type="module">
+    import jongular from '../src/index.js'
+
+    // Diretiva nova em cinco linhas: o registro de 2015, agora público.
+    jongular.directive('show', ({ element, evaluate, effect }) => {
+      effect(() => {
+        element.hidden = !evaluate()
+      })
+    })
+
+    const app = jongular.module('myApp')
+
+    app.service('greeter', function () {
+      this.greet = (user) => (user.shouting ? user.name.toUpperCase() : user.name)
+    })
+
+    app.controller('profileController', ($scope, $rootScope, greeter) => {
+      $rootScope.title = 'JongularJS 2.0'
+      $scope.user = { name: 'Jonathan', shouting: false }
+      $scope.greeting = () => greeter.greet($scope.user)
+    })
+
+    app.controller('counterController', function ($scope) {
+      $scope.count = 0
+      $scope.add = () => $scope.count++
+      $scope.addMany = (amount) => {
+        $scope.count += amount
+      }
+    })
+
+    // Notação em array: sobrevive a um minificador que renomeia parâmetros.
+    app.controller('httpController', ['$scope', '$http', (scope, http) => {
+      scope.status = 'carregando'
+      scope.load = async () => {
+        const response = await http.get('user.json')
+        scope.author = response.data
+        scope.status = response.status
+      }
+    }])
+  </script>
+</body>
+</html>
